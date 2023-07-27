@@ -1,71 +1,64 @@
-import { useCallback, useEffect, useState } from 'react'
-import Button from '../components/Button'
-import ClickCount from '../components/ClickCount'
-import styles from '../styles/home.module.css'
+// Path: pages/index.js
+// Compare this snippet from pages/index.js:
+// /*
+// Create a text area with the following specifications:
+// 
+// 1. a H1 with the text "Find Nutrition Facts for any recipe"
+// 2. a text area for users to upload recipe
+// 3. a button for users to submit the entered recipe
+// 4. a section at the bottom to display nutrition facts
+// 5. Get the data from this link: http://localhost:8080/openai/generateinfo
+// 6. Name the component RecipeInfo
+// 7. Export the component as a module
+// */ 
+// 
 
-function throwError() {
-  console.log(
-    // The function body() is not defined
-    document.body()
-  )
-}
+/* q: How do I resolve CORS errors? */
 
-function Home() {
-  const [count, setCount] = useState(0)
-  const increment = useCallback(() => {
-    setCount((v) => v + 1)
-  }, [setCount])
+import { useState } from "react";
 
-  useEffect(() => {
-    const r = setInterval(() => {
-      increment()
-    }, 1000)
+const RecipeInfo = () => {
+  const [recipe, setRecipe] = useState("");
+  const [nutrition, setNutrition] = useState("");
 
-    return () => {
-      clearInterval(r)
-    }
-  }, [increment])
+  const handleChange = (e) => {
+    setRecipe(e.target.value);
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const response = await fetch("http://localhost:8080/openai/generateinfo", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ recipe }),
+    });
+
+    const data = await response.json();
+    setNutrition(data.data);
+  };
 
   return (
-    <main className={styles.main}>
-      <h1>Fast Refresh Demo</h1>
-      <p>
-        Fast Refresh is a Next.js feature that gives you instantaneous feedback
-        on edits made to your React components, without ever losing component
-        state.
-      </p>
-      <hr className={styles.hr} />
-      <div>
-        <p>
-          Auto incrementing value. The counter won't reset after edits or if
-          there are errors.
-        </p>
-        <p>Current value: {count}</p>
+    <div className="container">
+      <h1>Find Nutrition Facts for any recipe</h1>
+      <form onSubmit={handleSubmit}>
+        <textarea
+          name="recipe"
+          id="recipe"
+          cols="30"
+          rows="10"
+          onChange={handleChange}
+        ></textarea>
+        <button type="submit">Submit</button>
+      </form>
+      <div className="nutrition">
+        <h2>Nutrition</h2>
+        <p>{nutrition}</p>
       </div>
-      <hr className={styles.hr} />
-      <div>
-        <p>Component with state.</p>
-        <ClickCount />
-      </div>
-      <hr className={styles.hr} />
-      <div>
-        <p>
-          The button below will throw 2 errors. You'll see the error overlay to
-          let you know about the errors but it won't break the page or reset
-          your state.
-        </p>
-        <Button
-          onClick={(e) => {
-            setTimeout(() => document.parentNode(), 0)
-            throwError()
-          }}
-        >
-          Throw an Error
-        </Button>
-      </div>
-      <hr className={styles.hr} />
-    </main>
-  )
-}
+    </div>
+  );
+};
 
-export default Home
+export default RecipeInfo;
